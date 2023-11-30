@@ -1,33 +1,36 @@
-import { Component } from 'react';
+import { useEffect } from 'react';
 import { AppDiv } from './App.styled';
 
 import { ContactForm } from './ContactForm/ContactForm';
-import { ContactList } from './ContactForm/ContactList';
-import { Filter } from './Filter';
+import { ContactList } from './ContactForm/ContactList/ContactList';
+import { Filter } from './Filter/Filter';
 
 import { nanoid } from 'nanoid';
+import { useState } from 'react';
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+export const App = () => {
+  const [contacts, setContacts] = useState([]);
+  const [filter, setFilter] = useState('');
 
-  componentDidMount() {
+  const filteredContacts = contacts.length
+    ? contacts.filter(contact =>
+        contact.name.toLowerCase().includes(filter.toLowerCase())
+      )
+    : [];
+
+  useEffect(() => {
     const savedContacts = JSON.parse(localStorage.getItem('contacts')) || [];
 
-    savedContacts.length && this.setState({ contacts: savedContacts });
-  }
+    savedContacts.length && setContacts(savedContacts);
+  }, []);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-  handleSubmit = ({ name, number }) => {
+  function handleSubmit({ name, number }) {
     if (
-      this.state.contacts.some(
+      contacts.some(
         contact => contact.name.toLowerCase() === name.toLowerCase()
       )
     ) {
@@ -36,47 +39,39 @@ export class App extends Component {
     }
 
     const newContact = { name, number, id: nanoid() };
-    this.setState(prev => ({ contacts: [...prev.contacts, newContact] }));
-  };
+    setContacts(prev => {
+      return [...prev, newContact];
+    });
+  }
 
-  handleSearch = e => {
+  function handleSearch(e) {
     const searchName = e.target.value;
-    this.setState({ filter: searchName });
-  };
+    setFilter(searchName);
+  }
 
-  handleDelete = e => {
+  function handleDelete(e) {
     const nameToDelete = e.target.parentNode.firstChild.textContent.slice(
       0,
       -2
     );
-    this.setState(({ contacts }) => {
-      const newContacts = contacts.filter(({ name }) => name !== nameToDelete);
+    setContacts(prev => {
+      const newContacts = prev.filter(({ name }) => name !== nameToDelete);
 
-      return {
-        contacts: newContacts,
-      };
+      return newContacts;
     });
-  };
-
-  render() {
-    const filteredContacts = this.state.contacts.length
-      ? this.state.contacts.filter(contact =>
-          contact.name.toLowerCase().includes(this.state.filter.toLowerCase())
-        )
-      : [];
-
-    return (
-      <AppDiv className="main">
-        <h1>Phonebook</h1>
-        <ContactForm handleSubmit={this.handleSubmit} />
-
-        <h2>Contacts:</h2>
-        <Filter handleSearch={this.handleSearch} />
-        <ContactList
-          initialValues={filteredContacts}
-          handleDelete={this.handleDelete}
-        />
-      </AppDiv>
-    );
   }
-}
+
+  return (
+    <AppDiv className="main">
+      <h1>Phonebook</h1>
+      <ContactForm handleSubmit={handleSubmit} />
+
+      <h2>Contacts:</h2>
+      <Filter handleSearch={handleSearch} />
+      <ContactList
+        initialValues={filteredContacts}
+        handleDelete={handleDelete}
+      />
+    </AppDiv>
+  );
+};

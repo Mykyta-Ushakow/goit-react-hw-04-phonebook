@@ -1,46 +1,43 @@
-import { Component } from 'react';
+import { useState } from 'react';
 
-export class ContactForm extends Component {
-  state = {
-    name: '',
-    number: '',
-  };
+export const ContactForm = props => {
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
 
-  onSubmit = e => {
+  const onSubmit = e => {
     e.preventDefault();
-    this.props.handleSubmit(this.state);
-    this.setState({ name: '', number: '' });
+    props.handleSubmit({ number, name });
+    setName('');
+    setNumber('');
   };
 
-  onType = e => {
+  const onType = e => {
     const field = e.target.name;
     const value = e.target.value;
 
-    this.setState({ [field]: value });
+    field === 'name' ? setName(value) : setNumber(value);
   };
 
-  render() {
-    return (
-      <form onSubmit={this.onSubmit}>
-        <label>Name</label>
-        <input
-          type="text"
-          name="name"
-          value={this.state.name || ''}
-          onChange={this.onType}
-          required
-        />
+  return (
+    <form onSubmit={onSubmit}>
+      <label>Name</label>
+      <input
+        type="text"
+        name="name"
+        value={name || ''}
+        onChange={onType}
+        required
+      />
 
-        <label>Number</label>
-        <input
-          type="tel"
-          name="number"
-          required
-          onChange={this.onType}
-          value={this.state.number || ''}
-        />
-        <button type="submit">Add Contact</button>
-      </form>
-    );
-  }
-}
+      <label>Number</label>
+      <input
+        type="tel"
+        name="number"
+        required
+        onChange={onType}
+        value={number || ''}
+      />
+      <button type="submit">Add Contact</button>
+    </form>
+  );
+};
