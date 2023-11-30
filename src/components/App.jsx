@@ -9,7 +9,9 @@ import { nanoid } from 'nanoid';
 import { useState } from 'react';
 
 export const App = () => {
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState(
+    JSON.parse(localStorage.getItem('contacts')) || []
+  );
   const [filter, setFilter] = useState('');
 
   const filteredContacts = contacts.length
@@ -17,12 +19,6 @@ export const App = () => {
         contact.name.toLowerCase().includes(filter.toLowerCase())
       )
     : [];
-
-  useEffect(() => {
-    const savedContacts = JSON.parse(localStorage.getItem('contacts')) || [];
-
-    savedContacts.length && setContacts(savedContacts);
-  }, []);
 
   useEffect(() => {
     localStorage.setItem('contacts', JSON.stringify(contacts));
